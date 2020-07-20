@@ -4,10 +4,13 @@ import imutils
 import time
 from imutils import contours
 import sys
+from imutils import perspective
 
 cv2.namedWindow("Sort",cv2.WINDOW_NORMAL)
 
 img = cv2.imread("Test/"+sys.argv[1])
+
+
 
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 blur = cv2.GaussianBlur(gray, (5,5), 0)
@@ -23,16 +26,19 @@ print(len(cnts))
 cnts,_ = contours.sort_contours(cnts)
 ind=1
 for (i,c) in enumerate(cnts):
-	if cv2.contourArea(c)>55:
+	if cv2.contourArea(c)>105:
 		box = cv2.minAreaRect(c)
 		box = cv2.cv.BoxPoints(box) if imutils.is_cv2() else cv2.boxPoints(box)
 		box = np.array(box, dtype="int")
+		print("Object #{}".format(ind))
 		print(box)
-		cv2.putText(out, "Object #{}".format(ind),(box[0][0],box[0][1]),cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.6, (0,0, 255),1)
+		print()
 		cv2.drawContours(out, [box], -1, (0, 255, 0), 2)
-		ind+=1
 
-    # cv2.drawContours(out, [c], -1, (0,255,0), 0)
+		rect = perspective.order_points(box)
+		for (x, y) in rect:
+			cv2.putText(out, "Object #{}".format(ind),(int(rect[0][0] - 15), int(rect[0][1] - 15)),cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 0, 255), 2)
+		ind+=1
 
 cv2.imshow("Sort",out)
 cv2.imwrite("Results/result_"+sys.argv[1],out)
